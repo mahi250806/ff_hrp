@@ -149,16 +149,22 @@ def _get_prices(
         ):
             return cached[tickers].loc[start:end]
 
-    downloaded = yf.download(
-        tickers, start=start, end=end, auto_adjust=True, progress=False
-    )
-    if "Close" in downloaded.columns.get_level_values(0) if hasattr(downloaded.columns, "get_level_values") else False:
-        prices = downloaded["Close"]
-    else:
-        prices = downloaded
-
-    if isinstance(prices, pd.Series):
-        prices = prices.to_frame(tickers[0])
+    # Download each ticker individually — avoids yfinance MultiIndex ambiguity
+    # across versions and ensures every ticker's Close is correctly extracted.
+    prices_dict = {}
+    for ticker in tickers:
+        try:
+            raw = yf.download(ticker, start=start, end=end, auto_adjust=True, progress=False)
+            if raw.empty:
+                continue
+            # Flatten MultiIndex if present (some yfinance versions wrap single tickers too)
+            if isinstance(raw.columns, pd.MultiIndex):
+                raw.columns = raw.columns.get_level_values(0)
+            if "Close" in raw.columns:
+                prices_dict[ticker] = raw["Close"]
+        except Exception:
+            pass
+    prices = pd.DataFrame(prices_dict)
 
     prices = prices.sort_index()
 
