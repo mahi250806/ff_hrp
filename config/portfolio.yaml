@@ -1,0 +1,49 @@
+run:
+  frequency: daily
+  lookback_years: 2
+  factor_model: carhart4
+  min_obs_ratio: 20
+  risk_free_from_factors: true
+
+assets:
+  - sheet_symbol: ELILILLY
+    ticker: LLY
+    asset_class: Healthcare
+
+  - sheet_symbol: MSFT
+    ticker: MSFT
+    asset_class: IT
+
+  - sheet_symbol: GOOGLE_A
+    ticker: GOOGL
+    asset_class: CommServices
+
+  - sheet_symbol: BRDCOM
+    ticker: AVGO
+    asset_class: IT
+
+  - sheet_symbol: NVIDA
+    ticker: NVDA
+    asset_class: IT
+
+  - sheet_symbol: AMZN
+    ticker: AMZN
+    asset_class: ConsumerDisc
+
+  - sheet_symbol: DRAM
+    ticker: MU
+    asset_class: IT
+    proxy_note: "DRAM -> MU memory-cycle proxy"
+
+  - sheet_symbol: LITE
+    ticker: LITE
+    asset_class: IT
+
+  - sheet_symbol: USCOCOA_CASH
+    ticker: COCO
+    asset_class: Commodity
+    proxy_note: "cocoa ETN proxy; expect low factor R2"
+
+  - sheet_symbol: ARKG
+    ticker: ARKG
+    asset_class: ETF_Other
