@@ -149,19 +149,16 @@ def _get_prices(
         ):
             return cached[tickers].loc[start:end]
 
-    # Download each ticker individually — avoids yfinance MultiIndex ambiguity
-    # across versions and ensures every ticker's Close is correctly extracted.
+    # Use Ticker.history() per asset — always returns a flat DataFrame with no
+    # MultiIndex, so "Close" is unambiguous regardless of yfinance version.
     prices_dict = {}
     for ticker in tickers:
         try:
-            raw = yf.download(ticker, start=start, end=end, auto_adjust=True, progress=False)
-            if raw.empty:
-                continue
-            # Flatten MultiIndex if present (some yfinance versions wrap single tickers too)
-            if isinstance(raw.columns, pd.MultiIndex):
-                raw.columns = raw.columns.get_level_values(0)
-            if "Close" in raw.columns:
-                prices_dict[ticker] = raw["Close"]
+            hist = yf.Ticker(ticker).history(start=start, end=end, auto_adjust=True)
+            if not hist.empty and "Close" in hist.columns:
+                s = hist["Close"]
+                s.index = s.index.tz_localize(None)  # strip timezone for alignment
+                prices_dict[ticker] = s
         except Exception:
             pass
     prices = pd.DataFrame(prices_dict)
